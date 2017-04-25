@@ -78,9 +78,10 @@ class BattleScenario {
 
         if (this.stateHandler.isWaiting(this.battlersManager.next())) {
             this.inputHandler.handle(input, this.battlersManager.next())
+        } else {
+            this.stateHandler.handleEvent(this.battlersManager.next(), input)
         }
 
-        this.stateHandler.handleEvent(this.battlersManager.next(), input)
     }
 }
 
@@ -198,8 +199,8 @@ class ActionProvider {
 
     waitingFor(battler) {
         for (let provider of this.providers) {
-            if (provider.waitingFor(battler)) {
-                return true
+            if (provider.supports(battler)) {
+                return provider.waitingFor
             }
 
             return false
@@ -213,7 +214,7 @@ class AutoActionProvider {
     }
 
     supports(battler) {
-        return true//!battler.isPlayer
+        return !battler.isPlayer
     }
 
     provideFor(battler) {
@@ -237,7 +238,7 @@ class SelectActionProvider {
     constructor() {}
 
     supports(battler) {
-        return false//battler.isPlayer
+        return battler.isPlayer
     }
 
     provideFor(battler) {
@@ -247,7 +248,7 @@ class SelectActionProvider {
     }
 
     waitingFor(battler) {
-        return !(0 < battler.state.countdown)  //???
+        return undefined === battler.state
     }
 }
 
@@ -257,7 +258,14 @@ class BattlersManager {
     }
 
     next() {
+        let a=0
         return this.battlers.reduce(function(acc, val) {
+            if (undefined === acc.state) {
+                return acc
+            }
+            if (undefined === val.state) {
+                return val
+            }
             return acc.state.endRound() < val.state.endRound() ? acc : val
         })
     }
