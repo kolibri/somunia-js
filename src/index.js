@@ -15,8 +15,11 @@ function init() {
     for (let i = 0; i < 10; i++) {
         console.log(`\nFrame: ${i}`)
 
-        battle.tick(new NullInput())
+        let input = i === 4 ? new ActionAttackInput(battlersManager.enemiesOf(battlersManager.next())[0]) : new NullInput()
+
+        battle.tick(input)
         renderer.render(battle)
+    
     }
 
     console.log('End')
@@ -99,7 +102,7 @@ class ActionDefenseInput {}
 class InputHandler {
     handle(input, battler) {
         if (input instanceof ActionAttackInput) {
-            battler.state = new Attack(battler, 2, input.target)
+            battler.state = new Attack(battler, 2, battler.state.endRound(), input.target)
         } else if (input instanceof ActionDefenseInput) {
             battler.state = new Defense()
         }
@@ -116,7 +119,24 @@ class Battler {
     }
 }
 
+class SelectAction {
+    constructor(battler, round=0) {
+        this.battler = battler
+        this.round = round
+    }
 
+    endRound() {
+        return this.round
+    }
+
+    followedBy() {
+        return false
+    }
+
+    event() {
+
+    }
+}
 class Action {
     constructor(battler, delay=1, round=0) {
         this.countdown = delay
@@ -125,12 +145,11 @@ class Action {
     }
 
     endRound() {
-        let a=0
         return this.round + this.countdown
     }
 
     followedBy() {
-        return false
+        return new SelectAction(this.battler, this.endRound())
     }
 
     event() {
@@ -251,7 +270,7 @@ class SelectActionProvider {
     }
 
     waitingFor(battler) {
-        return undefined === battler.state
+        return battler.state instanceof SelectAction
     }
 }
 
@@ -263,12 +282,12 @@ class BattlersManager {
     next() {
         let a=0
         return this.battlers.reduce(function(acc, val) {
-            if (undefined === acc.state) {
+            /*if (undefined === acc.state) {
                 return acc
             }
             if (undefined === val.state) {
                 return val
-            }
+            }*/
             return acc.state.endRound() < val.state.endRound() ? acc : val
         })
     }
