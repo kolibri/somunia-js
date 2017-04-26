@@ -3,6 +3,7 @@
 function init() {
     console.log('Start')
 
+    var inputListener = new InputListener()
     var battlersManager = new BattlersManager([
         new Battler('player', 100, 75),
         new Battler('dragon', 90, 55, false)
@@ -10,25 +11,43 @@ function init() {
 
 
     var battle = new BattleScenario(battlersManager)
-    var renderer = new Renderer()
+    var renderer = new Renderer(inputListener)
 
-    for (let i = 0; i < 10; i++) {
-        console.log(`\nFrame: ${i}`)
+    setInterval(onTimerTick, 500); // 33 milliseconds = ~ 30 frames per sec
 
-        let input = i === 4 ? new ActionAttackInput(battlersManager.enemiesOf(battlersManager.next())[0]) : new NullInput()
+    function onTimerTick() {
+        let input = inputListener.getInput(); //new NullInput()
 
         battle.tick(input)
         renderer.render(battle)
-    
     }
 
     console.log('End')
 }
 
+class InputListener {
+    constructor() {
+        this.input = new NullInput()
+    }
+
+    setInput(input) {
+        this.input = input
+    }
+
+    getInput() {
+        let input = this.input;
+        this.input = new NullInput()
+
+        return input
+    }
+}
+
 class Renderer {
+    constructor(inputListener) {
+        this.inputListener = inputListener
+    }
+
     render(battle) {
-        let a=0;    
-        console.log("IsWaiting in render: " + battle.stateHandler.isWaiting(battle.battlersManager.next()))
         let battleElement = document.querySelector('#battle')
         battleElement.innerHTML = ''
         battleElement.appendChild(document.createTextNode(
@@ -59,6 +78,24 @@ class Renderer {
                 ].join("\n") : ''
             )
         ))
+
+
+        if (battle.stateHandler.isWaiting(battle.battlersManager.next())) {
+
+            let attackButtons = []
+            for(let battler of battle.battlersManager.battlers) {
+                let inputListener = this.inputListener
+                let button = document.createElement('button')
+                button.appendChild(document.createTextNode(battler.name))
+                button.addEventListener('click', function(){
+                    console.log('click')
+                    let a=0
+                    inputListener.setInput(new ActionAttackInput(battler))
+                })
+                battleElement.appendChild(button)
+            }
+        }
+
     }
 }
 
@@ -78,9 +115,6 @@ class BattleScenario {
     }
 
     tick(input) {
-        console.log('tick')
-        console.log(this.battlersManager.next().name)
-
         if (this.stateHandler.isWaiting(this.battlersManager.next())) {
             this.inputHandler.handle(input, this.battlersManager.next())
         } else {
@@ -133,9 +167,7 @@ class SelectAction {
         return false
     }
 
-    event() {
-
-    }
+    event() {}
 }
 class Action {
     constructor(battler, delay=1, round=0) {
@@ -264,9 +296,7 @@ class SelectActionProvider {
     }
 
     provideFor(battler) {
-        console.log(`Select Action for ${ battler.name }`)
-        console.log('Attack')
-        console.log('Defense')
+
     }
 
     waitingFor(battler) {
