@@ -15,7 +15,7 @@ function init() {
     for (let i = 0; i < 10; i++) {
         console.log(`\nFrame: ${i}`)
 
-        battle.tick()
+        battle.tick(new NullInput())
         renderer.render(battle)
     }
 
@@ -49,6 +49,7 @@ class Renderer {
             (
                 battle.stateHandler.isWaiting(battle.battlersManager.next()) ? 
                 [
+                    '##' + battle.battlersManager.next().name + '\n',
                     'Choose action: \n',
                     '(A)ttack\n',
                     '(D)efense\n'
@@ -69,6 +70,7 @@ class BattleScenario {
         ])
 
         this.stateHandler = new StateHandler(actionProvider)
+        this.inputHandler = new InputHandler()
         let a = 0
     }
 
@@ -86,6 +88,7 @@ class BattleScenario {
 }
 
 class Input {}
+class NullInput {}
 class ActionAttackInput {
     constructor(target) {
         this.target = target
@@ -200,11 +203,11 @@ class ActionProvider {
     waitingFor(battler) {
         for (let provider of this.providers) {
             if (provider.supports(battler)) {
-                return provider.waitingFor
+                return provider.waitingFor(battler)
             }
-
-            return false
         }
+
+        return false
     }
 }
 
