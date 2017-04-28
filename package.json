@@ -1,0 +1,23 @@
+{
+  "name": "somunia-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "./node_modules/.bin/webpack src/index.js dist/somunia.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kolibri/somunia-js.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kolibri/somunia-js/issues"
+  },
+  "homepage": "https://github.com/kolibri/somunia-js#readme",
+  "devDependencies": {
+    "webpack": "^2.4.1"
+  }
+}
