@@ -8,6 +8,11 @@ export default class Renderer {
     render(battle) {
         let battleElement = document.querySelector('#battle')
         battleElement.innerHTML = ''
+        this.renderInfo(battle, battleElement)
+        this.renderUi(battle, battleElement)
+    }
+
+    renderInfo(battle, battleElement) {
         battleElement.appendChild(document.createTextNode(
             `Battlers: \n` +
             battle.battlersManager
@@ -25,20 +30,19 @@ export default class Renderer {
                 .map(function(battler){
                     return `${ battler.name }: ${ battler.currenthp }/${ battler.maxhp }\n`
                 })
-                .join("") + 
-            (
-                battle.stateHandler.isWaiting(battle.battlersManager.next()) ? 
+        ))
+    }
+
+    renderUi(battle, battleElement) {
+        if (battle.stateHandler.isWaiting(battle.battlersManager.next())) {
+            battleElement.appendChild(document.createTextNode(
                 [
                     '##' + battle.battlersManager.next().name + '\n',
                     'Choose action: \n',
                     '(A)ttack\n',
                     '(D)efense\n'
-                ].join("\n") : ''
-            )
-        ))
-
-
-        if (battle.stateHandler.isWaiting(battle.battlersManager.next())) {
+                ].join("\n")
+            ))
 
             let attackButtons = []
             for(let battler of battle.battlersManager.battlers) {
